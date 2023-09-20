@@ -1,124 +1,101 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot;
-import edu.wpi.first.wpilibj.DriverStation;
+
 import edu.wpi.first.wpilibj.TimedRobot;
-
-import com.ctre.phoenix.schedulers.ConcurrentScheduler;
-import com.ctre.phoenix.schedulers.SequentialScheduler;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Loops.DriveDistance;
-import frc.robot.Loops.DriveStraight;
-import frc.robot.Robots.Loops;
-import frc.robot.Robots.RobotMap;
-import frc.robot.Robots.Subsystems;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+/**
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
+ * project.
+ */
 public class Robot extends TimedRobot {
+  public static CTREConfigs ctreConfigs;
 
-  ConcurrentScheduler teleop;
+  private Command m_autonomousCommand;
 
-  SequentialScheduler red;
-  SequentialScheduler blue;
+  private RobotContainer m_robotContainer;
 
-  Alliance side;
-
-  String[] pos = {"Basic", "Basic Plus", "Advanced", "Pro", "Pro Plus"};
-
-  int posi = 0;
-
+  /**
+   * This function is run when the robot is first started up and should be used for any
+   * initialization code.
+   */
   @Override
   public void robotInit() {
-    RobotMap.Init();
-    Subsystems.Init();
-    teleop = new ConcurrentScheduler();
-    Loops.sTeleop(teleop);
-    teleop.startAll();
+    ctreConfigs = new CTREConfigs();
+   
+   // CameraServer.startAutomaticCapture();
+
+    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // autonomous chooser on the dashboard.
+    m_robotContainer = new RobotContainer();
   }
 
+  /**
+   * This function is called every robot packet, no matter the mode. Use this for items like
+   * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
+   *
+   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
+   * SmartDashboard integrated updating.
+   */
   @Override
   public void robotPeriodic() {
-    SmartDashboard.putString("Auton", pos[posi]);
-    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
+    // commands, running already-scheduled commands, removing finished or interrupted commands,
+    // and running subsystem periodic() methods.  This must be called from the robot's periodic
+    // block in order for anything in the Command-based framework to work.
+    CommandScheduler.getInstance().run();
   }
 
+  /** This function is called once each time the robot enters Disabled mode. */
+  @Override
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {}
+
+  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    red = new SequentialScheduler(0);
-    blue = new SequentialScheduler(0);
-    SmartDashboard.putString("Alliance", side.toString());
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    if(side == Alliance.Red){
-      switch(posi){
-        //Basic - Cone 2nd Level, preload & park charging station
-        case 0:
-          red.add(new DriveDistance(15));
-        break;
-        //Basic Plus - Basic + Cube middle lower
-        case 1:
-        break;
-        //Advanced - Cone 2nd Level in coop & level charging station
-        case 2:
-        break;
-        //Pro - Start at wall, play as many as possible
-        case 3:
-        break;
-        //Pro Plus - Pro + substation
-        case 4:
-        break;
-      }
-      red.start();
-    }
-    else{
-      switch(posi){
-        //Basic - Cone 2nd Level, preload & park charging station
-        case 0:
-        break;
-        //Basic Plus - Basic + Cube middle lower
-        case 1:
-        break;
-        //Advanced - Cone 2nd Level in coop & level charging station
-        case 2:
-        break;
-        //Pro - Start at wall, play as many as possible
-        case 3:
-        break;
-        //Pro Plus - Pro + substation
-        case 4:
-        break;
-      }
-    blue.start();
-    }
-  }
-  @Override
-  public void autonomousPeriodic() {
-    if(side == Alliance.Red){
-      red.process();
-    }else{
-      blue.process();
+    // schedule the autonomous command (example)
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.schedule();
     }
   }
 
+  /** This function is called periodically during autonomous. */
   @Override
-  public void teleopInit() {}
+  public void autonomousPeriodic() {}
 
   @Override
-  public void teleopPeriodic() {
-    teleop.process();
+  public void teleopInit() {
+    // This makes sure that the autonomous stops running when
+    // teleop starts running. If you want the autonomous to
+    // continue until interrupted by another command, remove
+    // this line or comment it out.
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
   }
 
+  /** This function is called periodically during operator control. */
   @Override
-  public void disabledInit() {
-    side = DriverStation.getAlliance();
+  public void teleopPeriodic() {}
+  
+
+  @Override
+  public void testInit() {
+    // Cancels all running commands at the start of test mode.
+    CommandScheduler.getInstance().cancelAll();
   }
 
-  @Override
-  public void disabledPeriodic(){
-if(RobotMap.driverController.getL3Button()){
-  posi++;
-}}
-
-  @Override
-  public void testInit() {}
-
+  /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
 }
