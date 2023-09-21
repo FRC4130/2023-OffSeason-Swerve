@@ -44,6 +44,7 @@ public final class Constants {
         public static final int drivePeakCurrentLimit = 60;
         public static final double drivePeakCurrentDuration = 0.1;
         public static final boolean driveEnableCurrentLimit = true;
+        public static final double kMaxVoltage = 12.0;
 
         /* Angle Motor PID Values */
         public static final double angleKP = 0.6;
@@ -106,7 +107,7 @@ public final class Constants {
             public static final int driveMotorID = 42;
             public static final int angleMotorID = 41;
             public static final int canCoderID = 40;
-            public static final double angleOffset = 337;
+            public static final double angleOffset = 337-180;
             public static final SwerveModuleConstants constants = 
                 new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
         }

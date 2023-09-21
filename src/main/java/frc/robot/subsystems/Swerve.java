@@ -1,6 +1,10 @@
 package frc.robot.subsystems;
 
 import frc.robot.SwerveModule;
+import frc.robot.Constants.Swerve.Mod0;
+import frc.robot.Constants.Swerve.Mod1;
+import frc.robot.Constants.Swerve.Mod2;
+import frc.robot.Constants.Swerve.Mod3;
 import frc.lib.util.DriftCorrection;
 import frc.robot.Constants;
 
@@ -17,6 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.CTREConfigs;
 
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
@@ -144,5 +149,9 @@ public class Swerve extends SubsystemBase {
 
         SmartDashboard.putString("XY Coord", "(" + getPose().getX() + ", " + getPose().getY() + ")");
 
+    }
+
+    public SwerveDriveKinematics geKinematics() {
+        return Constants.Swerve.swerveKinematics;
     }
 }

@@ -4,16 +4,28 @@
 
 package frc.robot;
 
+import java.time.Period;
+import java.util.HashMap;
+import java.util.List;
+
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.intakeMode;
@@ -41,8 +53,14 @@ public class RobotContainer {
   private static final Wrist wristSubsystem = new Wrist();
   private static final Intake intakeSubsystem = new Intake();
 
-  //Auto Chooser
-  SendableChooser<Command> m_AutoChooser = new SendableChooser<>();
+  // Set to use Path Planner
+  private boolean usePathPlanner = true;
+  // private boolean debugSwerve = false;
+  SendableChooser<List<PathPlannerTrajectory>> autoChooser = new SendableChooser<>();
+  SwerveAutoBuilder autoBuilder;
+  List<PathPlannerTrajectory> selectedAuto;
+  SendableChooser<String> AllianceChooser = new SendableChooser<>();
+  HashMap<String, Command> pathPlannerEventMap = new HashMap<>();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -53,13 +71,15 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     
-    //Add autonoumous options to chooser
-    m_AutoChooser.setDefaultOption("None", Autos.none());
-    m_AutoChooser.addOption("PathPlanner Example", Autos.exampleAuto());
 
-    SmartDashboard.putData(m_AutoChooser);
 
     wristSubsystem.setDefaultCommand(new JoystickArm(wristSubsystem, () -> opController.getLeftY()));
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+    SmartDashboard.putBoolean("Use PathPlanner", true);
+
+    // Generate Path Planner Groups
+    generatePathPlannerPathGroups();
+    createAutoBuilder();
   }
 
   /**
@@ -84,6 +104,41 @@ public class RobotContainer {
       
   }
 
+  private void generatePathPlannerPathGroups() {
+    List<PathPlannerTrajectory> B_Cube_Backup = PathPlanner.loadPathGroup("B Cube Backup",
+        new PathConstraints(2, 2));
+
+    autoChooser.setDefaultOption("B Cube Backup", B_Cube_Backup);
+  }
+
+  private void createAutoBuilder() {
+
+    pathPlannerEventMap = new HashMap<>();
+    pathPlannerEventMap.put("Cube Low", new SetWristMode(wristSubsystem, wristMode.low));
+    pathPlannerEventMap.put("Cube Mid", new SetWristMode(wristSubsystem, wristMode.mid));
+    pathPlannerEventMap.put("Home", new SetWristMode(wristSubsystem, wristMode.home));
+    pathPlannerEventMap.put("Intaking", new SetIntakeMode(intakeSubsystem, intakeMode.intaking));
+    pathPlannerEventMap.put("Outtaking", new SetIntakeMode(intakeSubsystem, intakeMode.outtaking));
+    pathPlannerEventMap.put("Stop Intake", new SetIntakeMode(intakeSubsystem, intakeMode.stop));
+    pathPlannerEventMap.put("Wait", new WaitCommand(0.5));
+    autoBuilder = new SwerveAutoBuilder(
+
+        s_Swerve::getPose, // Pose2d supplier
+        s_Swerve::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+        s_Swerve.geKinematics(), // SwerveDriveKinematics
+        new PIDConstants(Constants.Swerve.driveKP, 0.0, 0.0), // PID constants to correct for translation error (used to
+                                                              // create the X and Y PID controllers)
+        new PIDConstants(Constants.Swerve.angleKP, 0.0, 0.0), // PID constants to correct for rotation error (used to
+                                                                 // create the rotation controller)
+        s_Swerve::drive, // Module states consumer used to output to the drive subsystem
+        pathPlannerEventMap,
+        true, // Should the path be automatically mirrored depending on alliance color.
+              // Optional, defaults to true
+        s_Swerve // The drive subsystem. Used to properly set the requirements of path following
+                   // commands
+    );
+  }
+
   public void teleInit(){
     wristSubsystem.resetPosition();
     intakeSubsystem.resetPosition();
@@ -94,7 +149,19 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
+  public DriverStation.Alliance getAlliance() {
+    return DriverStation.getAlliance();
+  }
+
   public Command getAutonomousCommand() {
-    return m_AutoChooser.getSelected();
+    usePathPlanner = SmartDashboard.getBoolean("Use PathPlanner", true);
+    if (usePathPlanner) {
+      return generateAutoWithPathPlanner();
+    }
+    return null;
+  }
+
+  private Command generateAutoWithPathPlanner() {
+    return autoBuilder.fullAuto(autoChooser.getSelected());
   }
 }
