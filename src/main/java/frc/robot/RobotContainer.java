@@ -73,7 +73,7 @@ public class RobotContainer {
     
 
 
-    wristSubsystem.setDefaultCommand(new JoystickArm(wristSubsystem, () -> opController.getLeftY()));
+    wristSubsystem.setDefaultCommand(new JoystickArm(wristSubsystem, () -> -opController.getLeftY()));
     SmartDashboard.putData("Auto Chooser", autoChooser);
     SmartDashboard.putBoolean("Use PathPlanner", true);
 
@@ -121,22 +121,22 @@ public class RobotContainer {
     pathPlannerEventMap.put("Outtaking", new SetIntakeMode(intakeSubsystem, intakeMode.outtaking));
     pathPlannerEventMap.put("Stop Intake", new SetIntakeMode(intakeSubsystem, intakeMode.stop));
     pathPlannerEventMap.put("Wait", new WaitCommand(0.5));
-    autoBuilder = new SwerveAutoBuilder(
+    // autoBuilder = new SwerveAutoBuilder(
 
-        s_Swerve::getPose, // Pose2d supplier
-        s_Swerve::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
-        s_Swerve.geKinematics(), // SwerveDriveKinematics
-        new PIDConstants(Constants.Swerve.driveKP, 0.0, 0.0), // PID constants to correct for translation error (used to
-                                                              // create the X and Y PID controllers)
-        new PIDConstants(Constants.Swerve.angleKP, 0.0, 0.0), // PID constants to correct for rotation error (used to
-                                                                 // create the rotation controller)
-        s_Swerve::drive, // Module states consumer used to output to the drive subsystem
-        pathPlannerEventMap,
-        true, // Should the path be automatically mirrored depending on alliance color.
-              // Optional, defaults to true
-        s_Swerve // The drive subsystem. Used to properly set the requirements of path following
-                   // commands
-    );
+    //     s_Swerve::getPose, // Pose2d supplier
+    //     s_Swerve::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+    //     s_Swerve.geKinematics(), // SwerveDriveKinematics
+    //     new PIDConstants(Constants.Swerve.driveKP, 0.0, 0.0), // PID constants to correct for translation error (used to
+    //                                                           // create the X and Y PID controllers)
+    //     new PIDConstants(Constants.Swerve.angleKP, 0.0, 0.0), // PID constants to correct for rotation error (used to
+    //                                                              // create the rotation controller)
+    //     s_Swerve::drive, // Module states consumer used to output to the drive subsystem
+    //     pathPlannerEventMap,
+    //     true, // Should the path be automatically mirrored depending on alliance color.
+    //           // Optional, defaults to true
+    //     s_Swerve // The drive subsystem. Used to properly set the requirements of path following
+    //                // commands
+    // );
   }
 
   public void teleInit(){
