@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.intakeMode;
 import frc.robot.Constants.wristMode;
 import frc.robot.autos.*;
+import frc.robot.commandGroups.SetWristToPos;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
@@ -105,38 +106,38 @@ public class RobotContainer {
   }
 
   private void generatePathPlannerPathGroups() {
-    List<PathPlannerTrajectory> B_Cube_Backup = PathPlanner.loadPathGroup("B Cube Backup",
+    List<PathPlannerTrajectory> B_One_Cube_Backup = PathPlanner.loadPathGroup("B_One_Cube_Backup",
         new PathConstraints(2, 2));
 
-    autoChooser.setDefaultOption("B Cube Backup", B_Cube_Backup);
+    autoChooser.setDefaultOption("B Cube Backup", B_One_Cube_Backup);
   }
 
   private void createAutoBuilder() {
 
     pathPlannerEventMap = new HashMap<>();
     pathPlannerEventMap.put("Cube Low", new SetWristMode(wristSubsystem, wristMode.low));
-    pathPlannerEventMap.put("Cube Mid", new SetWristMode(wristSubsystem, wristMode.mid));
+    pathPlannerEventMap.put("Cube Mid", new SetWristToPos(wristSubsystem));
     pathPlannerEventMap.put("Home", new SetWristMode(wristSubsystem, wristMode.home));
     pathPlannerEventMap.put("Intaking", new SetIntakeMode(intakeSubsystem, intakeMode.intaking));
     pathPlannerEventMap.put("Outtaking", new SetIntakeMode(intakeSubsystem, intakeMode.outtaking));
     pathPlannerEventMap.put("Stop Intake", new SetIntakeMode(intakeSubsystem, intakeMode.stop));
     pathPlannerEventMap.put("Wait", new WaitCommand(0.5));
-    // autoBuilder = new SwerveAutoBuilder(
+    autoBuilder = new SwerveAutoBuilder(
 
-    //     s_Swerve::getPose, // Pose2d supplier
-    //     s_Swerve::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
-    //     s_Swerve.geKinematics(), // SwerveDriveKinematics
-    //     new PIDConstants(Constants.Swerve.driveKP, 0.0, 0.0), // PID constants to correct for translation error (used to
-    //                                                           // create the X and Y PID controllers)
-    //     new PIDConstants(Constants.Swerve.angleKP, 0.0, 0.0), // PID constants to correct for rotation error (used to
-    //                                                              // create the rotation controller)
-    //     s_Swerve::drive, // Module states consumer used to output to the drive subsystem
-    //     pathPlannerEventMap,
-    //     true, // Should the path be automatically mirrored depending on alliance color.
-    //           // Optional, defaults to true
-    //     s_Swerve // The drive subsystem. Used to properly set the requirements of path following
-    //                // commands
-    // );
+        s_Swerve::getPose, // Pose2d supplier
+        s_Swerve::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+        s_Swerve.geKinematics(), // SwerveDriveKinematics
+        new PIDConstants(Constants.Swerve.driveKP, 0.0, 0.0), // PID constants to correct for translation error (used to
+                                                              // create the X and Y PID controllers)
+        new PIDConstants(Constants.Swerve.angleKP, 0.0, 0.0), // PID constants to correct for rotation error (used to
+                                                                 // create the rotation controller)
+        s_Swerve::drive, // Module states consumer used to output to the drive subsystem
+        pathPlannerEventMap,
+        true, // Should the path be automatically mirrored depending on alliance color.
+              // Optional, defaults to true
+        s_Swerve // The drive subsystem. Used to properly set the requirements of path following
+                   // commands
+    );
   }
 
   public void teleInit(){

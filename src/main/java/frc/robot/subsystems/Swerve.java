@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.SwerveModule;
+// import com.swervedrivespecialties.swervelib.SwerveModule;
 import frc.robot.Constants.Swerve.Mod0;
 import frc.robot.Constants.Swerve.Mod1;
 import frc.robot.Constants.Swerve.Mod2;
@@ -71,7 +72,31 @@ public class Swerve extends SubsystemBase {
         for(SwerveModule mod : mSwerveMods){
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
-    }    
+    }
+    
+    public void drive(SwerveModuleState[] states) {
+        if (SmartDashboard.getBoolean("Debug Swerve", false)) {
+            System.out.println("In drive SwerveModule[0]: " + states[0]);
+            System.out.println("In drive SwerveModule[1]: " + states[1]);
+            System.out.println("In drive SwerveModule[2]: " + states[2]);
+            System.out.println("In drive SwerveModule[3]: " + states[3]);
+        }
+        // this.states = states;
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.AutoConstants.kMaxSpeedMetersPerSecond);
+
+        mSwerveMods[0].setDesiredState(states[0], true);
+        mSwerveMods[1].setDesiredState(states[1], true);
+        mSwerveMods[2].setDesiredState(states[2], true);
+        mSwerveMods[3].setDesiredState(states[3], true);
+        // mSwerveMods[0].set(states[0].speedMetersPerSecond / Constants.AutoConstants.kMaxSpeedMetersPerSecond * Constants.Swerve.kMaxVoltage,
+        //         states[0].angle.getRadians());
+        // mSwerveMods[1].set(states[1].speedMetersPerSecond / Constants.AutoConstants.kMaxSpeedMetersPerSecond * Constants.Swerve.kMaxVoltage,
+        //         states[1].angle.getRadians());
+        // mSwerveMods[2].set(states[2].speedMetersPerSecond / Constants.AutoConstants.kMaxSpeedMetersPerSecond * Constants.Swerve.kMaxVoltage,
+        //         states[2].angle.getRadians());
+        // mSwerveMods[3].set(states[3].speedMetersPerSecond / Constants.AutoConstants.kMaxSpeedMetersPerSecond * Constants.Swerve.kMaxVoltage,
+        //         states[3].angle.getRadians());
+    }
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {

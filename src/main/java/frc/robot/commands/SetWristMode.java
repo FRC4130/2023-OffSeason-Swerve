@@ -7,7 +7,7 @@ import frc.robot.subsystems.Wrist;
 
 public class SetWristMode extends CommandBase{
     private Wrist wristSubsystem;
-    private wristMode WristMode;
+    public wristMode WristMode;
 
     public SetWristMode(Wrist wristSubsystem, wristMode wristMode) {
         this.wristSubsystem = wristSubsystem;
