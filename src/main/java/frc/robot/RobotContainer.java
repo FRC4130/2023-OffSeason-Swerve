@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.intakeMode;
 import frc.robot.Constants.wristMode;
 import frc.robot.autos.*;
-import frc.robot.commandGroups.SetWristToPos;
+import frc.robot.commandGroups.SetWristToMidPos;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
@@ -108,15 +108,18 @@ public class RobotContainer {
   private void generatePathPlannerPathGroups() {
     List<PathPlannerTrajectory> B_One_Cube_Backup = PathPlanner.loadPathGroup("B_One_Cube_Backup",
         new PathConstraints(2, 2));
+    List<PathPlannerTrajectory> Long = PathPlanner.loadPathGroup("Long",
+        new PathConstraints(2, 2));
 
     autoChooser.setDefaultOption("B Cube Backup", B_One_Cube_Backup);
+    autoChooser.addOption("Long", Long);
   }
 
   private void createAutoBuilder() {
 
     pathPlannerEventMap = new HashMap<>();
     pathPlannerEventMap.put("Cube Low", new SetWristMode(wristSubsystem, wristMode.low));
-    pathPlannerEventMap.put("Cube Mid", new SetWristToPos(wristSubsystem));
+    pathPlannerEventMap.put("Cube Mid", new SetWristToMidPos(wristSubsystem));
     pathPlannerEventMap.put("Home", new SetWristMode(wristSubsystem, wristMode.home));
     pathPlannerEventMap.put("Intaking", new SetIntakeMode(intakeSubsystem, intakeMode.intaking));
     pathPlannerEventMap.put("Outtaking", new SetIntakeMode(intakeSubsystem, intakeMode.outtaking));
